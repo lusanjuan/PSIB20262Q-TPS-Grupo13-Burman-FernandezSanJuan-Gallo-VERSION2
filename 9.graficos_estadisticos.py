@@ -345,7 +345,7 @@ for i, (ax, (banda, canal)) in enumerate(zip(axs, marcadores)):
     p_frc = p_global(P3, banda, canal, "p_friedman_4_sesiones")
     ax.text(0.5, -0.34,
             f"Solo 3-back: Friedman p = {p_fr3:.2f} {estrellas(p_fr3)}\n"
-            f"ANOVA-MR p = {p_rm3:.2f} {estrellas(p_rm3)}\n"
+            #f"ANOVA-MR p = {p_rm3:.2f} {estrellas(p_rm3)}\n"
             f"Sesión completa: Friedman p = {p_frc:.2f}",
             transform=ax.transAxes, ha="center", va="top", fontsize=9, color=TINTA_2)
     ax.set_title(f"{banda} {canal}", fontsize=12, fontweight="bold", color=COLOR_BANDA[banda], pad=22)
