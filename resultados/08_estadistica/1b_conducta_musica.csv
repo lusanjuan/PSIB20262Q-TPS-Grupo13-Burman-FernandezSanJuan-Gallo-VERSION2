@@ -1,0 +1,7 @@
+tarea,sesion,n_sujetos,aciertos_ref,aciertos_sesion,diferencia_pp,mejoran,empeoran,p_wilcoxon,p_holm,p_anova_rm_4_sesiones,p_friedman_4_sesiones
+1-back,musica_relajante,9,93.4345,93.182,-0.2526,6,3,1.0,1.0,0.5012,0.2857
+1-back,musica_excitante,9,93.4345,92.0456,-1.3889,3,5,0.1953,0.5859,0.5012,0.2857
+1-back,musica_ia,9,93.4345,93.182,-0.2525,5,4,0.7969,1.0,0.5012,0.2857
+3-back,musica_relajante,9,79.3561,83.081,3.7249,8,1,0.0078,0.0234,0.0003,0.0034
+3-back,musica_excitante,9,79.3561,77.6516,-1.7045,4,5,0.5156,0.5156,0.0003,0.0034
+3-back,musica_ia,9,79.3561,85.4168,6.0607,7,2,0.0391,0.0781,0.0003,0.0034

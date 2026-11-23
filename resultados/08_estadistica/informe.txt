@@ -1,0 +1,191 @@
+Sujetos: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A9', 'A10']
+Canales por banda: theta: ['AF7', 'AF8'], alfa: ['AF7', 'AF8', 'TP9', 'TP10'], beta: ['AF7', 'AF8', 'TP9', 'TP10']
+Nivel de significación: 0.05. Mínimo de ventanas aceptadas: 20.
+
+================================================================================
+PARTE 1 – Conducta
+================================================================================
+
+1a. ¿El 3-back es más difícil que el 1-back? (Wilcoxon, aciertos por sujeto)
+----------------------------------------------------------------------------
+Aciertos: 1-back 93.0%, 3-back 81.4% (-11.6 puntos). 9 de 9 sujetos aciertan menos en 3-back. p = 0.0039
+  -> El 3-back es más difícil: la manipulación de carga funcionó.
+
+1b. ¿La música cambia los aciertos? (por tarea; Holm sobre 3 tests por tarea)
+-----------------------------------------------------------------------------
+
+1-back: sin_musica 93.4%, musica_relajante 93.2%, musica_excitante 92.0%, musica_ia 93.2%
+  ¿Difieren las 4 sesiones? ANOVA de medidas repetidas p = 0.5012, Friedman p = 0.2857 (n = 9)
+
+3-back: sin_musica 79.4%, musica_relajante 83.1%, musica_excitante 77.7%, musica_ia 85.4%
+  ¿Difieren las 4 sesiones? ANOVA de medidas repetidas p = 0.0003, Friedman p = 0.0034 (n = 9)
+
+ tarea           sesion  n_sujetos  diferencia_pp  mejoran  empeoran  p_holm
+1-back musica_relajante          9         -0.253        6         3   1.000
+1-back musica_excitante          9         -1.389        3         5   0.586
+1-back        musica_ia          9         -0.252        5         4   1.000
+3-back musica_relajante          9          3.725        8         1   0.023
+3-back musica_excitante          9         -1.705        4         5   0.516
+3-back        musica_ia          9          6.061        7         2   0.078
+  -> 3-back, musica_relajante: +3.7 puntos (8 mejoran; p Holm = 0.023).
+  Ojo: el orden de las sesiones fue siempre el mismo; una mejora puede deberse a práctica.
+
+================================================================================
+PARTE 2 – Réplica del paper: ANOVA dentro de cada sujeto (beta, ventanas de 1 s)
+================================================================================
+
+Comparaciones sesión vs sin_musica: 99. Significativas: 85%.
+canal           sesion  n_sujetos  suben_signif  bajan_signif  no_signif
+  AF7 musica_excitante          8             3             5          0
+  AF7        musica_ia          8             5             2          1
+  AF7 musica_relajante          8             3             4          1
+  AF8 musica_excitante          8             2             6          0
+  AF8        musica_ia          8             3             4          1
+  AF8 musica_relajante          8             4             4          0
+ TP10 musica_excitante          8             2             5          1
+ TP10        musica_ia          8             1             3          4
+ TP10 musica_relajante          8             1             5          2
+  TP9 musica_excitante          9             3             5          1
+  TP9        musica_ia          9             3             4          2
+  TP9 musica_relajante          9             2             5          2
+  Ojo: con cientos de ventanas casi cualquier diferencia da significativa, y las ventanas
+  seguidas no son independientes (pseudorreplicación). Las conclusiones de grupo salen
+  de las Partes 3 a 5.
+
+================================================================================
+PARTE 3 – ¿La música cambia la potencia? (cada sesión vs sin_musica, sesión completa)
+================================================================================
+Por canal y banda: ANOVA de medidas repetidas y Friedman entre las 4 sesiones;
+Wilcoxon de cada música vs sin_musica (Holm sobre 3 tests por canal y banda).
+
+theta (AF7, AF8)
+----------------
+canal           sesion  n_sujetos  cambio_pct  suben  bajan  p_holm  p_anova_rm_4_sesiones  p_friedman_4_sesiones
+  AF7 musica_relajante          8      -1.070      2      6    1.00                  0.349                  0.080
+  AF7 musica_excitante          8       1.896      4      4    1.00                  0.349                  0.080
+  AF7        musica_ia          8     -11.285      2      6    0.75                  0.349                  0.080
+  AF8 musica_relajante          8      -0.424      4      4    1.00                  0.812                  0.717
+  AF8 musica_excitante          8      12.149      4      4    1.00                  0.812                  0.717
+  AF8        musica_ia          8       3.325      4      4    1.00                  0.812                  0.717
+  -> Ningún cambio de theta con la música es significativo.
+
+alfa (AF7, AF8, TP9, TP10)
+--------------------------
+canal           sesion  n_sujetos  cambio_pct  suben  bajan  p_holm  p_anova_rm_4_sesiones  p_friedman_4_sesiones
+  AF7 musica_relajante          8      -3.438      3      5   0.383                  0.009                  0.016
+  AF7 musica_excitante          8      -5.604      1      7   0.297                  0.009                  0.016
+  AF7        musica_ia          8     -11.589      1      7   0.047                  0.009                  0.016
+  AF8 musica_relajante          8      -6.037      5      3   1.000                  0.727                  0.789
+  AF8 musica_excitante          8      -1.745      4      4   1.000                  0.727                  0.789
+  AF8        musica_ia          8      -4.215      3      5   1.000                  0.727                  0.789
+  TP9 musica_relajante          9      -5.739      3      6   0.223                  0.371                  0.204
+  TP9 musica_excitante          9      -3.330      3      6   0.852                  0.371                  0.204
+  TP9        musica_ia          9       0.914      5      4   0.852                  0.371                  0.204
+ TP10 musica_relajante          8      -4.587      3      5   0.586                  0.225                  0.105
+ TP10 musica_excitante          8      -0.980      3      5   0.922                  0.225                  0.105
+ TP10        musica_ia          8       5.155      5      3   0.922                  0.225                  0.105
+  -> AF7 musica_ia: -11.6% (1 suben, 7 bajan; p Holm = 0.047).
+
+beta (AF7, AF8, TP9, TP10)
+--------------------------
+canal           sesion  n_sujetos  cambio_pct  suben  bajan  p_holm  p_anova_rm_4_sesiones  p_friedman_4_sesiones
+  AF7 musica_relajante          8       3.314      4      4   1.000                  0.649                  0.290
+  AF7 musica_excitante          8      -2.089      3      5   1.000                  0.649                  0.290
+  AF7        musica_ia          8      11.671      6      2   1.000                  0.649                  0.290
+  AF8 musica_relajante          8      -7.064      4      4   1.000                  0.479                  0.466
+  AF8 musica_excitante          8     -17.259      2      6   0.750                  0.479                  0.466
+  AF8        musica_ia          8      -3.937      4      4   1.000                  0.479                  0.466
+  TP9 musica_relajante          9      -7.598      3      6   1.000                  0.662                  0.769
+  TP9 musica_excitante          9      -6.479      4      5   1.000                  0.662                  0.769
+  TP9        musica_ia          9      -3.235      4      5   1.000                  0.662                  0.769
+ TP10 musica_relajante          8      -9.535      2      6   0.750                  0.662                  0.522
+ TP10 musica_excitante          8      -8.035      3      5   0.766                  0.662                  0.522
+ TP10        musica_ia          8      -4.930      3      5   0.766                  0.662                  0.522
+  -> Ningún cambio de beta con la música es significativo.
+
+================================================================================
+PARTE 4 – Carga cognitiva: 3-back vs 1-back
+================================================================================
+
+4a. ¿La potencia cambia en 3-back? (Wilcoxon contra 0; Holm sobre los canales de cada banda)
+--------------------------------------------------------------------------------------------
+banda canal  n_sujetos  cambio_pct  suben  bajan  p_wilcoxon  p_holm
+theta   AF7          8       8.642      6      2       0.148   0.297
+theta   AF8          8      11.293      5      3       0.250   0.297
+ alfa   AF7          8       6.568      7      1       0.078   0.297
+ alfa   AF8          8       4.972      4      4       0.461   0.922
+ alfa   TP9          9      -9.373      2      7       0.074   0.297
+ alfa  TP10          8      -6.995      4      4       0.461   0.922
+ beta   AF7          8       0.489      4      4       0.641   1.000
+ beta   AF8          8       1.258      3      5       0.945   1.000
+ beta   TP9          9      -0.333      2      7       0.570   1.000
+ beta  TP10          8      -4.520      1      7       0.195   0.781
+  -> Ningún efecto de la carga es significativo.
+
+4b. ¿La música modifica el efecto de la carga? (Friedman entre sesiones; Holm por banda)
+----------------------------------------------------------------------------------------
+banda canal  n_sujetos_completos  p_friedman  p_holm
+theta   AF7                    8       0.985   1.000
+theta   AF8                    8       0.789   1.000
+ alfa   AF7                    8       0.930   1.000
+ alfa   AF8                    8       0.256   1.000
+ alfa   TP9                    9       0.769   1.000
+ alfa  TP10                    8       0.583   1.000
+ beta   AF7                    8       0.290   0.904
+ beta   AF8                    8       0.789   1.000
+ beta   TP9                    9       0.706   1.000
+ beta  TP10                    8       0.226   0.904
+  -> No hay evidencia de que la música modifique el efecto de la carga.
+
+================================================================================
+PARTE 5 – ¿El EEG acompaña la mejora de los aciertos en 3-back?
+================================================================================
+Solo bloques de 3-back. Para cada banda, canal y música:
+  (1) ¿la potencia cambia respecto de sin_musica? (Wilcoxon)
+  (2) ¿los sujetos que más mejoran sus aciertos son los que más cambian la potencia? (Spearman)
+Holm sobre (canales de la banda) x 3 músicas, por separado para cada tipo de test.
+
+theta en 3-back (AF7, AF8; Holm sobre 6 tests)
+----------------------------------------------
+canal           sesion  n_sujetos  cambio_pct  suben  bajan  p_wilcoxon_holm  rho_spearman  p_spearman_holm
+  AF7 musica_relajante          8      -0.313      4      4            1.000         0.168            1.000
+  AF7 musica_excitante          8       5.716      4      4            1.000        -0.405            1.000
+  AF7        musica_ia          8      -7.974      5      3            1.000        -0.012            1.000
+  AF8 musica_relajante          8       6.956      5      3            1.000        -0.144            1.000
+  AF8 musica_excitante          8      21.925      6      2            0.656        -0.595            0.717
+  AF8        musica_ia          8      15.522      5      3            1.000         0.275            1.000
+  -> theta: ni cambios consistentes ni relación con los aciertos.
+
+alfa en 3-back (AF7, AF8, TP9, TP10; Holm sobre 12 tests)
+---------------------------------------------------------
+canal           sesion  n_sujetos  cambio_pct  suben  bajan  p_wilcoxon_holm  rho_spearman  p_spearman_holm
+  AF7 musica_relajante          8      -6.221      2      6            1.000         0.323            1.000
+  AF7 musica_excitante          8      -4.255      3      5            1.000         0.119            1.000
+  AF7        musica_ia          8     -14.728      1      7            0.469         0.790            0.235
+  AF8 musica_relajante          8      -4.063      5      3            1.000        -0.252            1.000
+  AF8 musica_excitante          8       0.415      4      4            1.000        -0.714            0.512
+  AF8        musica_ia          8      -0.434      4      4            1.000         0.323            1.000
+  TP9 musica_relajante          9      -4.589      3      6            1.000         0.385            1.000
+  TP9 musica_excitante          9      -0.432      4      5            1.000         0.200            1.000
+  TP9        musica_ia          9       1.249      6      3            1.000         0.636            0.656
+ TP10 musica_relajante          8      -3.211      4      4            1.000         0.407            1.000
+ TP10 musica_excitante          8      -0.911      3      5            1.000         0.024            1.000
+ TP10        musica_ia          8       5.774      5      2            1.000         0.599            1.000
+  -> alfa: ni cambios consistentes ni relación con los aciertos.
+
+beta en 3-back (AF7, AF8, TP9, TP10; Holm sobre 12 tests)
+---------------------------------------------------------
+canal           sesion  n_sujetos  cambio_pct  suben  bajan  p_wilcoxon_holm  rho_spearman  p_spearman_holm
+  AF7 musica_relajante          8       0.828      4      4              1.0        -0.156              1.0
+  AF7 musica_excitante          8      -8.910      3      5              1.0         0.190              1.0
+  AF7        musica_ia          8       9.175      4      4              1.0         0.395              1.0
+  AF8 musica_relajante          8      -8.960      4      4              1.0         0.216              1.0
+  AF8 musica_excitante          8     -13.849      2      6              1.0        -0.048              1.0
+  AF8        musica_ia          8      -0.898      4      4              1.0         0.156              1.0
+  TP9 musica_relajante          9      -7.662      2      7              1.0         0.050              1.0
+  TP9 musica_excitante          9      -9.163      3      6              1.0        -0.050              1.0
+  TP9        musica_ia          9      -0.521      3      6              1.0        -0.117              1.0
+ TP10 musica_relajante          8      -7.913      2      6              1.0         0.096              1.0
+ TP10 musica_excitante          8     -13.355      2      6              1.0        -0.167              1.0
+ TP10        musica_ia          8      -4.839      4      4              1.0         0.204              1.0
+  -> beta: ni cambios consistentes ni relación con los aciertos.
