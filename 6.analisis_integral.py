@@ -29,6 +29,8 @@ Guarda en resultados/06_grupo/:
   - conducta.csv:           aciertos por sujeto, sesión y tarea
   - grupo_interaccion.png, grupo_efecto_carga.png, grupo_efecto_musica.png,
     grupo_psd.png, grupo_conducta.png
+En las figuras con datos de cada sujeto, A9 (el sujeto del paper) va en naranja.
+Las tablas incluyen las 3 bandas; las figuras muestran solo theta y beta (alfa no se analiza).
 """
 import numpy as np
 import pandas as pd
@@ -44,8 +46,11 @@ VARIABLE = "potencia_rel"      # o "potencia_abs_uV2"
 MIN_VENTANAS = 20              # mínimo de ventanas aceptadas para usar un valor
 TAREAS = ["1-back", "3-back"]
 COLORES_TAREA = {"1-back": "tab:blue", "3-back": "tab:red"}
+SUJETO_PAPER = "A9"            # el sujeto que analiza el paper: se resalta en las figuras
+COLOR_PAPER = "tab:orange"
 canales = cfg.CANALES_ANALISIS
-bandas = list(cfg.BANDAS)
+bandas = list(cfg.BANDAS)                          # tablas: todas las bandas
+BANDAS_GRAFICOS = [b for b in bandas if b != "alfa"]  # figuras: solo theta y beta
 x = np.arange(len(cfg.SESIONES))
 
 
@@ -143,9 +148,9 @@ conducta.round(2).to_csv(DIR_GRUPO / "conducta.csv", index=False)
 # ---------------------------------------------------------------------------
 
 # --- Figura 1: interacción. Filas = bandas, columnas = canales ---
-fig, axs = plt.subplots(len(bandas), len(canales),
-                        figsize=(4.2 * len(canales), 3 * len(bandas)), squeeze=False)
-for fila, banda in enumerate(bandas):
+fig, axs = plt.subplots(len(BANDAS_GRAFICOS), len(canales),
+                        figsize=(4.2 * len(canales), 3 * len(BANDAS_GRAFICOS)), squeeze=False)
+for fila, banda in enumerate(BANDAS_GRAFICOS):
     for col, canal in enumerate(canales):
         ax = axs[fila, col]
         for k, tarea in enumerate(TAREAS):
@@ -168,13 +173,20 @@ fig.savefig(DIR_GRUPO / "grupo_interaccion.png", dpi=150)
 plt.close(fig)
 
 # --- Figura 2: carga, un punto por sujeto ---
-fig, axs = plt.subplots(1, len(bandas), figsize=(4.5 * len(bandas), 4.5), sharey=True)
-for ax, banda in zip(axs, bandas):
+fig, axs = plt.subplots(1, len(BANDAS_GRAFICOS), figsize=(4.5 * len(BANDAS_GRAFICOS), 4.5),
+                        sharey=True, squeeze=False)
+axs = axs[0]
+for ax, banda in zip(axs, BANDAS_GRAFICOS):
     for c, canal in enumerate(canales):
-        v = carga_sujeto[(carga_sujeto["canal"] == canal)
-                         & (carga_sujeto["banda"] == banda)]["cambio_pct"].dropna()
-        ax.scatter(np.full(len(v), c) + np.random.uniform(-0.1, 0.1, len(v)), v,
-                   color="0.5", s=20, zorder=2)
+        d = carga_sujeto[(carga_sujeto["canal"] == canal)
+                         & (carga_sujeto["banda"] == banda)].dropna(subset=["cambio_pct"])
+        v = d["cambio_pct"]
+        es_paper = (d["sujeto"] == SUJETO_PAPER).to_numpy()
+        jitter = np.random.uniform(-0.1, 0.1, len(v))
+        ax.scatter(c + jitter[~es_paper], v[~es_paper], color="0.5", s=20, zorder=2)
+        ax.scatter(c + jitter[es_paper], v[es_paper], color=COLOR_PAPER, s=45,
+                   edgecolor="k", lw=0.5, zorder=4,
+                   label=SUJETO_PAPER if c == 0 else None)
         ax.scatter(c, a_pct(np.log10(1 + v / 100).mean()), color="k", marker="_",
                    s=600, zorder=3)
         ax.text(c, 1.0, f"{(v < 0).sum()}↓ {(v > 0).sum()}↑",
@@ -185,22 +197,28 @@ for ax, banda in zip(axs, bandas):
     ax.set_title(banda)
     ax.grid(alpha=0.3, axis="y")
 axs[0].set_ylabel("Cambio 3-back vs 1-back [%]")
-fig.suptitle("Efecto de la carga: cada sujeto (gris) y media del grupo (negro); "
-             "↓↑ = sujetos que bajan / suben")
+axs[0].legend(loc="lower left")
+fig.suptitle(f"Efecto de la carga: cada sujeto (gris), {SUJETO_PAPER} (naranja) y media del "
+             "grupo (negro); ↓↑ = sujetos que bajan / suben")
 fig.tight_layout()
 fig.savefig(DIR_GRUPO / "grupo_efecto_carga.png", dpi=150)
 plt.close(fig)
 
 # --- Figura 3: música, una línea por sujeto ---
-fig, axs = plt.subplots(len(bandas), len(canales),
-                        figsize=(4.2 * len(canales), 3 * len(bandas)), squeeze=False, sharex=True)
-for fila, banda in enumerate(bandas):
+fig, axs = plt.subplots(len(BANDAS_GRAFICOS), len(canales),
+                        figsize=(4.2 * len(canales), 3 * len(BANDAS_GRAFICOS)), squeeze=False,
+                        sharex=True)
+for fila, banda in enumerate(BANDAS_GRAFICOS):
     for col, canal in enumerate(canales):
         ax = axs[fila, col]
         m = log_musica.xs((canal, banda), level=["canal", "banda"])
-        for _, valores in m.iterrows():
-            ax.plot(x, a_pct(valores), color="0.7", lw=0.8)
-        ax.plot(x, a_pct(m.mean()), color="k", lw=2, marker="o")
+        for sujeto, valores in m.iterrows():
+            if sujeto != SUJETO_PAPER:
+                ax.plot(x, a_pct(valores), color="0.7", lw=0.8)
+        ax.plot(x, a_pct(m.mean()), color="k", lw=2, marker="o", label="media del grupo")
+        if SUJETO_PAPER in m.index:
+            ax.plot(x, a_pct(m.loc[SUJETO_PAPER]), color=COLOR_PAPER, lw=2, marker="s",
+                    ms=4, label=SUJETO_PAPER, zorder=4)
         ax.axhline(0, color="r", ls="--", lw=0.8)
         ax.set_xticks(x)
         ax.set_xticklabels(cfg.SESIONES, rotation=20, fontsize=8)
@@ -209,8 +227,10 @@ for fila, banda in enumerate(bandas):
         if col == 0:
             ax.set_ylabel(f"{banda}\ncambio vs {cfg.SESION_REFERENCIA} [%]")
         ax.grid(alpha=0.3)
-fig.suptitle("Efecto de la música: cada sujeto (gris) y media del grupo (negro)")
-fig.tight_layout()
+fig.legend(*axs[0, 0].get_legend_handles_labels(), loc="upper right", ncol=2)
+fig.suptitle(f"Efecto de la música: cada sujeto (gris), {SUJETO_PAPER} (naranja) "
+             "y media del grupo (negro)", x=0.01, ha="left")
+fig.tight_layout(rect=(0, 0, 1, 0.95))
 fig.savefig(DIR_GRUPO / "grupo_efecto_musica.png", dpi=150)
 plt.close(fig)
 
@@ -224,8 +244,11 @@ psd_sujeto = psd.groupby(["sujeto", "canal", "tarea", "frecuencia_Hz"])["log_psd
 fig, axs = plt.subplots(1, len(canales), figsize=(4.5 * len(canales), 4), sharey=True,
                         squeeze=False)
 for ax, canal in zip(axs[0], canales):
-    for banda, (lo, hi) in cfg.BANDAS.items():
-        ax.axvspan(lo, hi, color="0.9" if banda == "alfa" else "0.96")
+    for banda in BANDAS_GRAFICOS:               # sombreado solo de theta y beta
+        lo, hi = cfg.BANDAS[banda]
+        ax.axvspan(lo, hi, color="0.93")
+        ax.text((lo + hi) / 2, 0.98, banda, transform=ax.get_xaxis_transform(),
+                ha="center", va="top", fontsize=8)
     for tarea in TAREAS:
         d = psd_sujeto[(psd_sujeto["canal"] == canal) & (psd_sujeto["tarea"] == tarea)]
         g = d.groupby("frecuencia_Hz")["log_psd"].agg(["mean", "sem"])
@@ -237,7 +260,7 @@ for ax, canal in zip(axs[0], canales):
     ax.set_xlabel("Frecuencia [Hz]")
     ax.grid(alpha=0.3, which="both")
 axs[0, 0].set_ylabel("PSD [µV²/Hz] (media geométrica)")
-axs[0, 0].legend()
+axs[0, 0].legend(loc="lower left")
 fig.suptitle("PSD promedio del grupo (4 sesiones juntas), media ± error estándar")
 fig.tight_layout()
 fig.savefig(DIR_GRUPO / "grupo_psd.png", dpi=150)
@@ -248,15 +271,22 @@ fig, ax = plt.subplots(figsize=(7, 4.5))
 for tarea in TAREAS:
     d = conducta[conducta["tarea"] == tarea].pivot_table(
         index="sujeto", columns="sesion", values="aciertos_pct").reindex(columns=cfg.SESIONES)
-    for _, valores in d.iterrows():
-        ax.plot(x, valores, color=COLORES_TAREA[tarea], alpha=0.25, lw=0.8)
+    for sujeto, valores in d.iterrows():
+        if sujeto != SUJETO_PAPER:
+            ax.plot(x, valores, color=COLORES_TAREA[tarea], alpha=0.25, lw=0.8)
     ax.errorbar(x, d.mean(), yerr=d.sem(), color=COLORES_TAREA[tarea], lw=2,
-                marker="o", capsize=3, label=tarea)
+                marker="o", capsize=3, label=f"{tarea} (media)")
+    if SUJETO_PAPER in d.index:
+        ax.plot(x, d.loc[SUJETO_PAPER], color=COLOR_PAPER, lw=2,
+                ls="-" if tarea == "1-back" else "--",
+                marker="o" if tarea == "1-back" else "s", ms=5,
+                label=f"{SUJETO_PAPER} {tarea}", zorder=4)
 ax.set_xticks(x)
 ax.set_xticklabels(cfg.SESIONES, rotation=15)
 ax.set_ylabel("Aciertos [%]")
-ax.set_title("Aciertos por sesión: cada sujeto (fino) y media ± error estándar (grueso)")
-ax.legend()
+ax.set_title(f"Aciertos por sesión: cada sujeto (fino), {SUJETO_PAPER} (naranja) "
+             "y media ± error estándar", fontsize=10)
+ax.legend(fontsize=8, loc="best")
 ax.grid(alpha=0.3)
 fig.tight_layout()
 fig.savefig(DIR_GRUPO / "grupo_conducta.png", dpi=150)
