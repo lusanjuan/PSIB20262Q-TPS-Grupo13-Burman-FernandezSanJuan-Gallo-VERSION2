@@ -53,7 +53,7 @@ def figuras_control(sujeto, t, x, t_f, x_f):
         ax.semilogy(f_f, p_f, lw=0.9, color="C1", label="Filtrado y submuestreado")
         ax.axvline(cfg.F_BAJA, color="k", ls="--", lw=0.8)
         ax.axvline(cfg.F_ALTA, color="k", ls="--", lw=0.8)
-        ax.axvline(cfg.F_LINEA, color="r", ls=":", lw=0.8, label="60 Hz (red eléctrica)")
+        #ax.axvline(cfg.F_LINEA, color="r", ls=":", lw=0.8, label="60 Hz (red eléctrica)")
         ax.set_title(canal)
     axs[0, 0].legend(fontsize=8)
     for ax in axs[1]:
