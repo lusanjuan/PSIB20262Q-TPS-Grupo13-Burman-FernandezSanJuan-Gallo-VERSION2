@@ -239770,15 +239770,12 @@ A9,sin_musica,TP9,beta,973,972.0,11.273273,0.126421
 A9,sin_musica,TP9,beta,974,973.0,25.969873,0.58314
 A9,sin_musica,TP10,theta,76,75.0,0.032163,9.2e-05
 A9,sin_musica,TP10,theta,969,968.0,0.020317,0.000362
-A9,sin_musica,TP10,theta,970,969.0,0.000261,0.000547
 A9,sin_musica,TP10,theta,971,970.0,0.00052,0.000247
 A9,sin_musica,TP10,alfa,76,75.0,0.000161,0.0
 A9,sin_musica,TP10,alfa,969,968.0,0.000263,5e-06
-A9,sin_musica,TP10,alfa,970,969.0,4e-06,8e-06
 A9,sin_musica,TP10,alfa,971,970.0,4e-06,2e-06
 A9,sin_musica,TP10,beta,76,75.0,8e-06,0.0
 A9,sin_musica,TP10,beta,969,968.0,1.9e-05,0.0
-A9,sin_musica,TP10,beta,970,969.0,0.0,1e-06
 A9,sin_musica,TP10,beta,971,970.0,0.0,0.0
 A9,musica_relajante,AF7,theta,1,0.0,28.397883,0.09013
 A9,musica_relajante,AF7,theta,2,1.0,3.75787,0.216769
