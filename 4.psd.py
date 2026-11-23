@@ -43,7 +43,10 @@ def potencia(f, psd, banda):
     return psd[..., dentro].sum(axis=-1) * df
 
 
-ventanas_info = pd.read_csv(DIR_ARTEFACTOS / "ventanas.csv")
+archivo_ventanas = DIR_ARTEFACTOS / "ventanas.csv"
+if not archivo_ventanas.exists():
+    raise FileNotFoundError(f"No existe {archivo_ventanas}. Correr primero el paso 3.")
+ventanas_info = pd.read_csv(archivo_ventanas)
 
 filas_psd = []
 filas_bandas = []
