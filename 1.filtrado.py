@@ -3,10 +3,9 @@ Paso 1: filtrado y submuestreo.
 
 Para cada sujeto:
   1. Carga el EEG (tiempos + 4 canales).
-  2. Saca el ruido de línea de 60 Hz (notch).
-  3. Aplica un pasabanda Butterworth de 1 a 50 Hz, de fase cero.
-  4. Baja la frecuencia de muestreo de 256 a 128 Hz.
-  5. Guarda el resultado en resultados/01_filtrado/<sujeto>_filtrado.npz
+  2. Aplica un pasabanda Butterworth de 1 a 50 Hz, de fase cero.
+  3. Baja la frecuencia de muestreo de 256 a 128 Hz.
+  4. Guarda el resultado en resultados/01_filtrado/<sujeto>_filtrado.npz
 
 Para cada sujeto guarda dos figuras de control con los 4 canales, antes y después:
   - control_filtrado_<sujeto>.png: la señal en el tiempo (10 s)
@@ -70,8 +69,7 @@ def figuras_control(sujeto, t, x, t_f, x_f):
 # ---------------------------------------------------------------------------
 cfg.DIR_FILTRADO.mkdir(parents=True, exist_ok=True)
 
-# Los filtros se diseñan una sola vez y sirven para todos los sujetos
-b_notch, a_notch = signal.iirnotch(cfg.F_LINEA, Q=30, fs=cfg.FS_ORIGINAL)
+# El filtro se diseña una sola vez y sirve para todos los sujetos
 sos_pasabanda = signal.butter(cfg.ORDEN_FILTRO, [cfg.F_BAJA, cfg.F_ALTA],
                               btype="bandpass", fs=cfg.FS_ORIGINAL, output="sos")
 factor = cfg.FS_ORIGINAL // cfg.FS_FINAL      # 256 / 128 = 2
@@ -90,9 +88,8 @@ for sujeto in cfg.SUJETOS_ACTIVOS:
     salto_max = np.diff(t).max() * 1000
     print(f"  fs estimada: {fs_real:.2f} Hz | salto máximo entre muestras: {salto_max:.1f} ms")
 
-    # 2 y 3. Notch + pasabanda (los dos de fase cero: ida y vuelta)
-    x_filt = signal.filtfilt(b_notch, a_notch, x, axis=0)
-    x_filt = signal.sosfiltfilt(sos_pasabanda, x_filt, axis=0)
+    # 2. Pasabanda de fase cero: ida y vuelta
+    x_filt = signal.sosfiltfilt(sos_pasabanda, x, axis=0)
 
     # 4. Submuestrear (resample_poly trae su propio filtro antialiasing)
     x_f = signal.resample_poly(x_filt, up=1, down=factor, axis=0)
