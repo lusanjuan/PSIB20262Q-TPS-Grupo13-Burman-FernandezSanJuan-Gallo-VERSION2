@@ -1,7 +1,7 @@
 """
 Paso 9: gráficos de los resultados, en el orden del relato del informe.
 
-Usa las tablas de los pasos 4, 5 y 8. Solo beta (hipótesis del paper) y theta
+Usa las tablas de los pasos 4, 5 y 8 (incluida la Parte 3b: 3b_musica_eeg_3back.csv). Solo beta (hipótesis del paper) y theta
 (marcador de memoria de trabajo); alfa queda fuera del relato principal.
 
 RELATO
@@ -12,6 +12,8 @@ RELATO
                             solo cambia el 3-back (el 1-back está cerca del techo).
   fig3_eeg_vs_conducta.png  Hipótesis del paper: si el desempeño cambia, beta y theta deberían
                             cambiar. El desempeño mejora, pero beta y theta no acompañan.
+  fig3b_musica_eeg_3back.png  Control: aun sacando el 1-back (cerca del techo de aciertos) y los
+                            tramos sin tarea, beta y theta en 3-back no cambian entre sesiones.
   fig4_paper_vs_grupo.png   El paper lo muestra en un sujeto (A9); en el grupo no se ve.
 
 ANEXO (para la discusión)
@@ -131,6 +133,7 @@ P1a = pd.read_csv(DIR_EST / "1a_conducta_carga.csv")
 P1b = pd.read_csv(DIR_EST / "1b_conducta_musica.csv")
 P2 = pd.read_csv(DIR_EST / "2_replica_resumen.csv")
 P3 = pd.read_csv(DIR_EST / "3_musica_eeg.csv")
+P3b = pd.read_csv(DIR_EST / "3b_musica_eeg_3back.csv")
 P5 = pd.read_csv(DIR_EST / "5_eeg_y_aciertos.csv")
 
 potencia = pd.read_csv(DIR_PSD / "potencia_bandas.csv")
@@ -306,6 +309,68 @@ fig.text(izq.x1 + 0.3 * (der.x0 - izq.x1), (der.y0 + der.y1) / 2, "≠", fontsiz
          ha="center", va="center")
 nota(fig)
 guardar(fig, "fig3_eeg_vs_conducta.png")
+
+# ===========================================================================
+# Figura 3b – Solo 3-back: ¿la potencia cambia entre las 4 sesiones?
+# ===========================================================================
+def p_global(tabla, banda, canal, columna):
+    t = tabla[(tabla["banda"] == banda) & (tabla["canal"] == canal)]
+    return t[columna].iloc[0] if len(t) else np.nan
+
+
+fig, axs = plt.subplots(1, len(marcadores), figsize=(3.6 * len(marcadores), 5.4), sharey=True)
+axs = np.atleast_1d(axs)
+todos = []
+for i, (ax, (banda, canal)) in enumerate(zip(axs, marcadores)):
+    cambio = cambio_eeg_3back(banda, canal)                       # % vs sin música, 3-back
+    cambio.insert(0, REF, 0.0)                                    # sin música = 0 por definición
+    cambio = cambio[cambio[musicas].notna().any(axis=1)]
+    todos.append(cambio[musicas].to_numpy())
+    for _, fila in cambio.iterrows():                             # una línea por sujeto
+        ax.plot(x, fila, color=GRIS_CLARO, lw=1.1, marker="o", ms=3.5, mfc=GRIS, mec=GRIS, zorder=2)
+    medias = cambio.mean()
+    ax.plot(x, medias, color=COLOR_BANDA[banda], lw=2.5, zorder=3)
+    for k, s in enumerate(cfg.SESIONES):
+        if s == REF:
+            ax.plot(k, 0, "o", color=COLOR_BANDA[banda], ms=10, mec="white", mew=1.5, zorder=4)
+            continue
+        media(ax, k, cambio[s], COLOR_BANDA[banda], marcador="D", tam=9)
+        p = P3b[(P3b["banda"] == banda) & (P3b["canal"] == canal) & (P3b["sesion"] == s)]["p_holm"]
+        marca_significancia(ax, k, p.iloc[0] if len(p) else np.nan)
+    ax.axhline(0, color=NEGRO, lw=0.8)
+
+    # Test global de las 4 sesiones: solo 3-back vs sesión completa (Parte 3)
+    p_fr3 = p_global(P3b, banda, canal, "p_friedman_4_sesiones")
+    p_rm3 = p_global(P3b, banda, canal, "p_anova_rm_4_sesiones")
+    p_frc = p_global(P3, banda, canal, "p_friedman_4_sesiones")
+    ax.text(0.5, -0.34,
+            f"Solo 3-back: Friedman p = {p_fr3:.2f} {estrellas(p_fr3)}\n"
+            f"ANOVA-MR p = {p_rm3:.2f} {estrellas(p_rm3)}\n"
+            f"Sesión completa: Friedman p = {p_frc:.2f}",
+            transform=ax.transAxes, ha="center", va="top", fontsize=9, color=TINTA_2)
+    ax.set_title(f"{banda} {canal}", fontsize=12, fontweight="bold", color=COLOR_BANDA[banda], pad=22)
+    ax.set_xticks(x)
+    ax.set_xticklabels([ETIQUETAS[s] for s in cfg.SESIONES], rotation=30, ha="right")
+    ax.set_xlim(-0.4, len(x) - 0.6)
+    if i == 0:
+        ax.set_ylabel("Cambio de potencia en 3-back\nvs sin música [%]")
+    else:
+        ax.tick_params(labelleft=False)
+lim = np.nanmax(np.abs(np.concatenate([t.ravel() for t in todos]))) * 1.1
+axs[0].set_ylim(-lim, lim)
+
+marc = P3b.set_index(["banda", "canal"]).index.isin(marcadores)
+hay_sig = ((P3b[marc]["p_holm"] < 0.05) | (P3b[marc]["p_friedman_4_sesiones"] < 0.05)
+           | (P3b[marc]["p_anova_rm_4_sesiones"] < 0.05)).any()
+encabezado(fig, "Solo con 3-back, algún marcador cambia entre sesiones" if hay_sig else
+           "Aun usando solo el 3-back, beta y theta no cambian con la música",
+           "Bloques de 3-back (sin el 1-back, cerca del techo de aciertos, ni los tramos sin tarea); "
+           "cada música vs sin música", reserva=1.55)
+fig.subplots_adjust(bottom=0.40)
+fig.text(0.01, 0.03, NOTA + "\nAbajo de cada panel: test de las 4 sesiones juntas (sin corregir entre "
+         "canales), solo 3-back y, como referencia, con la sesión completa (Parte 3)",
+         ha="left", va="bottom", fontsize=8.5, color=TINTA_2)
+guardar(fig, "fig3b_musica_eeg_3back.png")
 
 # ===========================================================================
 # Figura 4 – El paper (un sujeto) vs el grupo: beta en los canales del paper

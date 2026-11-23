@@ -10,6 +10,8 @@ Orden del análisis (el mismo que conviene usar en el informe):
       ANOVA de un factor con las ventanas de 1 s como observaciones, en beta.
   PARTE 3 – Música y EEG en el grupo
       ¿La potencia de cada banda cambia con la música de forma consistente entre sujetos?
+      3b. Lo mismo, pero solo con los bloques de 3-back (sin 1-back, que está cerca del
+          techo de aciertos, ni los tramos sin tarea).
   PARTE 4 – Carga cognitiva y EEG en el grupo
       4a. ¿La potencia cambia en 3-back respecto de 1-back?
       4b. ¿La música modifica esa diferencia? (interacción)
@@ -34,7 +36,7 @@ Criterios comunes:
 Guarda en resultados/08_estadistica/:
   1a_conducta_carga.csv, 1b_conducta_musica.csv,
   2_replica_por_sujeto.csv, 2_replica_resumen.csv,
-  3_musica_eeg.csv, 4a_carga_eeg.csv, 4b_interaccion.csv,
+  3_musica_eeg.csv, 3b_musica_eeg_3back.csv, 4a_carga_eeg.csv, 4b_interaccion.csv,
   5_eeg_y_aciertos.csv, informe.txt (todo lo impreso en pantalla)
 """
 import numpy as np
@@ -320,6 +322,59 @@ for banda in bandas:
               f"({f['suben']} suben, {f['bajan']} bajan; p Holm = {f['p_holm']:.3f}).")
     if not (t["p_holm"] < ALFA).any():
         decir(f"  -> Ningún cambio de {banda} con la música es significativo.")
+
+
+# ---------------------------------------------------------------------------
+# 3b. Lo mismo que la Parte 3, pero solo con los bloques de 3-back
+# ---------------------------------------------------------------------------
+titulo(f"PARTE 3b – ¿La música cambia la potencia en 3-back? (solo bloques de 3-back, vs {REF})")
+decir("La Parte 3 usa la sesión completa: mezcla 1-back (cerca del techo de aciertos),")
+decir("3-back y tramos sin tarea. Acá se usan SOLO las ventanas de 3-back, que es donde")
+decir("la tarea es exigente y donde la música mejoró los aciertos.")
+decir("Mismos tests que la Parte 3: ANOVA de medidas repetidas y Friedman entre las 4 sesiones;")
+decir("Wilcoxon de cada música vs sin_musica (Holm sobre 3 tests por canal y banda).")
+
+filas = []
+for banda in bandas:
+    for canal in canales_de(banda):
+        d = nback[(nback["tarea"] == "3-back") & (nback["banda"] == banda)
+                  & (nback["canal"] == canal)]
+        m = d.pivot_table(index="sujeto", columns="sesion", values="potencia_rel")
+        m = m.reindex(columns=cfg.SESIONES)
+        F, p_rm = anova_medidas_repetidas(m)
+        p_fr, n_fr = friedman(m)
+        log_cambio = np.log10(m[musicas].div(m[REF], axis=0))
+        p_wil = [wilcoxon(log_cambio[s]) for s in musicas]
+        for s, pw, ph in zip(musicas, p_wil, holm(p_wil)):
+            sube, baja = contar(log_cambio[s])
+            filas.append({"banda": banda, "canal": canal, "sesion": s,
+                          "n_sujetos": log_cambio[s].notna().sum(),
+                          "cambio_pct": a_pct(log_cambio[s].mean()), "suben": sube, "bajan": baja,
+                          "p_wilcoxon": pw, "p_holm": ph,
+                          "p_anova_rm_4_sesiones": p_rm, "p_friedman_4_sesiones": p_fr,
+                          "n_sujetos_completos": n_fr})
+P3b = pd.DataFrame(filas)
+P3b.round(5).to_csv(DIR_EST / "3b_musica_eeg_3back.csv", index=False)
+
+for banda in bandas:
+    t = P3b[P3b["banda"] == banda]
+    subtitulo(f"{banda} en 3-back ({', '.join(canales_de(banda))})")
+    decir(t[["canal", "sesion", "n_sujetos", "cambio_pct", "suben", "bajan", "p_holm",
+             "p_anova_rm_4_sesiones", "p_friedman_4_sesiones"]].round(3).to_string(index=False))
+    hay = False
+    for _, f in t[t["p_holm"] < ALFA].iterrows():
+        hay = True
+        decir(f"  -> {f['canal']} {f['sesion']}: {f['cambio_pct']:+.1f}% "
+              f"({f['suben']} suben, {f['bajan']} bajan; p Holm = {f['p_holm']:.3f}).")
+    globales = t.drop_duplicates("canal")
+    for _, f in globales[(globales["p_anova_rm_4_sesiones"] < ALFA)
+                         | (globales["p_friedman_4_sesiones"] < ALFA)].iterrows():
+        hay = True
+        decir(f"  -> {f['canal']}: las 4 sesiones difieren en 3-back (ANOVA-MR p = "
+              f"{f['p_anova_rm_4_sesiones']:.3f}, Friedman p = {f['p_friedman_4_sesiones']:.3f}).")
+    if not hay:
+        decir(f"  -> Ningún cambio de {banda} con la música es significativo, ni siquiera "
+              "usando solo 3-back.")
 
 
 # ===========================================================================
