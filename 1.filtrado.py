@@ -21,9 +21,9 @@ import config as cfg
 
 def figuras_control(sujeto, t, x, t_f, x_f):
     # Minuto 10 (al principio hay saturaciones); si el registro es más corto, la mitad
-    inicio = t[0] + min(600, (t[-1] - t[0]) / 2)
+    inicio = t[0] + min(600, (t[-1] - t[0]) / 2) 
 
-    # --- Figura 1: 10 s de señal, una fila por canal (izquierda original, derecha filtrada) ---
+    # Figura 1: 10 s de señal, una fila por canal (izquierda original, derecha filtrada) 
     antes = (t >= inicio) & (t < inicio + 10)
     despues = (t_f >= inicio) & (t_f < inicio + 10)
 
@@ -66,10 +66,13 @@ def figuras_control(sujeto, t, x, t_f, x_f):
     plt.close(fig)
 
 
-# ---------------------------------------------------------------------------
+
+
 cfg.DIR_FILTRADO.mkdir(parents=True, exist_ok=True)
 
-# El filtro se diseña una sola vez y sirve para todos los sujetos
+#signal.butter(orden, [f_baja, f_alta], btype="bandpass", fs, output="sos") diseña el filtro. 
+# Le pide a scipy un Butterworth pasabanda de orden 4 entre 1 y 50 Hz para una señal 
+# muestreada a 256 Hz.
 sos_pasabanda = signal.butter(cfg.ORDEN_FILTRO, [cfg.F_BAJA, cfg.F_ALTA],
                               btype="bandpass", fs=cfg.FS_ORIGINAL, output="sos")
 factor = cfg.FS_ORIGINAL // cfg.FS_FINAL      # 256 / 128 = 2
@@ -91,11 +94,11 @@ for sujeto in cfg.SUJETOS_ACTIVOS:
     # 2. Pasabanda de fase cero: ida y vuelta
     x_filt = signal.sosfiltfilt(sos_pasabanda, x, axis=0)
 
-    # 4. Submuestrear (resample_poly trae su propio filtro antialiasing)
+    # 3. Submuestrear (resample_poly trae su propio filtro antialiasing)
     x_f = signal.resample_poly(x_filt, up=1, down=factor, axis=0)
     t_f = t[::factor]
 
-    # 5. Guardar
+    # 4. Guardar
     np.savez(cfg.DIR_FILTRADO / f"{sujeto}_filtrado.npz",
              t=t_f, x=x_f, canales=cfg.CANALES, fs=cfg.FS_FINAL)
     print(f"  {len(t)} -> {len(t_f)} muestras, guardado")
